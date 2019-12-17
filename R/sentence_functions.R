@@ -38,12 +38,10 @@ tokenize_sentences_wrapper <- function(df, to_lower = TRUE) {
 #'   documents that have `search_pattern` in `window` sentence proximity
 #'     to `filter_pattern`.
 #' @export
-get_nested_indices <-
+get_sentence_window_indices <-
     function(filter_pattern,
-             search_pattern,
              window) {
         py$filter_pattern <- filter_pattern
-        py$search_pattern <- search_pattern
         py$window <- as.integer(window)
 
         reticulate::py_run_string('
@@ -51,12 +49,18 @@ get_nested_indices <-
 filtered_indices = [(i, sentence_window_i(doc, filter_pattern, window)) for i, doc in enumerate(sentences_lower)]
 filtered_indices = remove_docs_without_hits(filtered_indices)
 
-filtered_indices = filter_index_object(filtered_indices, sentences_lower, search_pattern)
+')
+}
+
+#' @export
+filter_sentence_window <- function(filter_pattern) {
+  py$filter_pattern <- filter_pattern
+  reticulate::py_run_string("
+
+filtered_indices = filter_index_object(filtered_indices, sentences_lower, filter_pattern)
 filtered_indices = remove_docs_without_hits(filtered_indices)
 
-
-')
-
+")
 }
 
 #' Title
