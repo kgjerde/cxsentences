@@ -110,8 +110,8 @@ cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus)
 }
 
 #' @export
-cx_extra_tab_text <- function() {
-    get_filtered_sentences_from_py()
+cx_extra_tab_text <- function(doc_ID) {
+    get_filtered_sentences_from_one_doc_py(doc_ID)
 }
 
 #' @export
@@ -126,24 +126,23 @@ cx_extra_replace_main_text <- function(input_field, df) {
 
 #' @export
 cx_validate_input <- function(input_field) {
-  input_for_check <- input_field %>%
-    stringr::str_remove_all("\n.*")
 
   validation_regex <- "^[^-]+--\\d+(--[^-]+)*$"
 
-  if (stringr::str_detect(input_for_check, validation_regex) == FALSE) {
+  if (all(stringr::str_detect(input_field, validation_regex)) == FALSE) {
     return(FALSE)
   }
 
-  input_for_check <- input_for_check %>%
+  dissected_pattern <- input_field %>%
     stringr::str_split("--") %>%
     unlist()
 
   # from check_regexes() from corporaexplorer explorer app:
   tryCatch(
-    is.integer(stringr::str_count("esel", input_for_check)),
+    is.integer(stringr::str_count("esel", dissected_pattern)),
     error = function(e) {
       FALSE
     }
   )
+
 }
