@@ -13,14 +13,33 @@
 #' @return internal Python object `sentences`
 #'   and `sentences_lower`.
 #' @export
-tokenize_sentences_wrapper <- function(df, to_lower = TRUE) {
+tokenize_sentences_ru <- function(df, to_lower = TRUE) {
     py$Text <- df$Text
-    reticulate::py_run_string("sentences = tokenize_sentences(Text)")
+    reticulate::py_run_string("sentences = tokenize_sentences_ru(Text)")
 
     if (to_lower == TRUE) {
         reticulate::py_run_string("sentences_lower = sentences_to_lower(sentences)")
     }
-    # return(py$sentences)
+}
+
+#' @export
+tokenize_sentences_no <- function(df, to_lower = TRUE) {
+    py$Text <- df$Text
+    reticulate::py_run_string("sentences = tokenize_sentences_no(Text)")
+
+    if (to_lower == TRUE) {
+        reticulate::py_run_string("sentences_lower = sentences_to_lower(sentences)")
+    }
+}
+
+#' @export
+tokenize_sentences_en <- function(df, to_lower = TRUE) {
+    py$Text <- df$Text
+    reticulate::py_run_string("sentences = tokenize_sentences_en(Text)")
+
+    if (to_lower == TRUE) {
+        reticulate::py_run_string("sentences_lower = sentences_to_lower(sentences)")
+    }
 }
 
 #' Wrapper for convenient argument passing
@@ -39,28 +58,49 @@ tokenize_sentences_wrapper <- function(df, to_lower = TRUE) {
 #'     to `filter_pattern`.
 #' @export
 get_sentence_window_indices <-
-    function(filter_pattern,
-             window) {
-        py$filter_pattern <- filter_pattern
-        py$window <- as.integer(window)
+  function(filter_pattern,
+           window,
+           case_sensitive = FALSE) {
+    py$filter_pattern <- filter_pattern
+    py$window <- as.integer(window)
 
-        reticulate::py_run_string('
+    if (case_sensitive == FALSE) {
+      reticulate::py_run_string("
 
 filtered_indices = [(i, sentence_window_i(doc, filter_pattern, window)) for i, doc in enumerate(sentences_lower)]
 filtered_indices = remove_docs_without_hits(filtered_indices)
 
-')
-}
+")
+    } else if (case_sensitive == TRUE) {
+      reticulate::py_run_string("
+
+filtered_indices = [(i, sentence_window_i(doc, filter_pattern, window)) for i, doc in enumerate(sentences)]
+filtered_indices = remove_docs_without_hits(filtered_indices)
+
+")
+    }
+  }
 
 #' @export
-filter_sentence_window <- function(filter_pattern) {
+filter_sentence_window <- function(filter_pattern, case_sensitive = FALSE) {
   py$filter_pattern <- filter_pattern
+
+  if (case_sensitive == FALSE) {
+
   reticulate::py_run_string("
 
 filtered_indices = filter_index_object(filtered_indices, sentences_lower, filter_pattern)
 filtered_indices = remove_docs_without_hits(filtered_indices)
 
 ")
+  } else if (case_sensitive == TRUE) {
+  reticulate::py_run_string("
+
+filtered_indices = filter_index_object(filtered_indices, sentences, filter_pattern)
+filtered_indices = remove_docs_without_hits(filtered_indices)
+
+")
+  }
 }
 
 #' Title
@@ -78,6 +118,18 @@ get_filtered_doc_indices_from_py <- function(r_indexing = TRUE) {
     return(indices)
 }
 
+#' @export
+get_number_of_sentences_per_doc <- function(r_indexing = TRUE) {
+    py$chunks_per_doc <- reticulate::py_eval("number_of_extracted_sentences_per_doc(filtered_indices)")
+    docs <- reticulate::py_eval("get_indices(chunks_per_doc)")
+    if (length(docs) > 0) {
+        docs <- docs + r_indexing
+        n <- reticulate::py_eval("[x[1] for x in chunks_per_doc]")
+        df <- data.frame(Term_1 = n, ID = docs)
+        return(df)
+    }
+}
+
 # TODO. Ser stygt ut i
 #' Title
 #'
@@ -89,6 +141,18 @@ get_filtered_sentences_from_py <- function() {
     texts <- unlist(texts)
 }
 
+# TODO. Ser stygt ut i
+#' Title
+#'
+#' @return
+#' @export
+get_filtered_sentences_from_one_doc_py <- function(doc_ID) {
+    py$index <- as.integer(doc_ID - 1)  # Python to R indexing
+    text <- reticulate::py_eval("retrieve_sentences_from_nested_indices_one_doc(filtered_indices, sentences, index)")
+    text <- lapply(text, paste, collapse = " ") %>%
+      unlist(use.names = FALSE) %>%
+        paste(collapse = "\n\n")
+}
 
 #' Returns a filtered
 #'   (full text) df based on the returned indices
