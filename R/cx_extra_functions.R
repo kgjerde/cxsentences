@@ -1,18 +1,25 @@
 #' @export
 cx_extra_reset_data <- function() {
-  reticulate::py_run_string("filtering_indices = list(range(len(sentences)))")
+  reticulate::py_run_string("filtered_indices = []")
+  reticulate::py_run_string("charting_indices = []")
+  reticulate::py_run_string("doc_indices = []")
+}
+
+cx_collect_terms <- function(input_field, case_sensitive) {
+  magic_input <- stringr::str_remove_all(input_field, "\n.*")
+  magic_input <- stringr::str_split(magic_input, "--")
+  magic_input <- unlist(magic_input)
+
+  if (case_sensitive == FALSE) {
+    magic_input <- stringr::str_to_lower(magic_input)
+  }
+  return(magic_input)
 }
 
 #' @export
-cx_extra_subset <- function(input_field, df, case_sensitive) {
-  magic_input <- input_field %>%
-    stringr::str_remove_all("\n.*") %>%
-    stringr::str_split("--") %>%
-    unlist()
+cx_extra_subset <- function(input_field, df, case_sensitive, indices_included = NULL) {
 
-  if (case_sensitive == FALSE) {
-      magic_input <- stringr::str_to_lower(magic_input)
-  }
+  magic_input <- cx_collect_terms(input_field, case_sensitive)
 
   if (length(magic_input) >= 2) {
 
@@ -24,7 +31,8 @@ cx_extra_subset <- function(input_field, df, case_sensitive) {
     get_sentence_window_indices(
       filter_pattern = main_filter_pattern,
       window = w,
-      case_sensitive
+      case_sensitive,
+      indices_included
     )
 
     if (length(more_patterns) > 0) {
@@ -45,15 +53,9 @@ cx_extra_subset <- function(input_field, df, case_sensitive) {
 }
 
 #' @export
-cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus) {
-  magic_input <- input_field %>%
-    stringr::str_remove_all("\n.*") %>%
-    stringr::str_split("--") %>%
-    unlist()
+cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus, indices_included = NULL) {
 
-  if (case_sensitive == FALSE) {
-      magic_input <- stringr::str_to_lower(magic_input)
-  }
+  magic_input <- cx_collect_terms(input_field, case_sensitive)
 
   if (length(magic_input) >= 2) {
 
@@ -65,21 +67,27 @@ cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus)
     get_sentence_window_indices(
       filter_pattern = main_filter_pattern,
       window = w,
-      case_sensitive
+      case_sensitive,
+      indices_included,
+      py_var_name = "charting_indices"
     )
 
     if (length(more_patterns) > 0) {
         for (i in seq_along(more_patterns)) {
             filter_sentence_window(more_patterns[i],
-                                   case_sensitive)
+                                   case_sensitive,
+                                   py_var_name = "charting_indices")
         }
     }
-
-    # get_filtered_doc_indices_from_py()
 
   }
 
   count_overview <- get_number_of_sentences_per_doc()
+
+  # If zero hits:
+  if (is.null(count_overview)) {
+      return(data.frame(Term_1 = rep(0, nrow(df_modus))))
+  }
 
   if (modus == "data_365") {
 
@@ -110,18 +118,25 @@ cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus)
 }
 
 #' @export
-cx_extra_tab_text <- function(doc_ID) {
-    get_filtered_sentences_from_one_doc_py(doc_ID)
-}
-
-#' @export
-cx_extra_replace_main_text <- function(input_field, df) {
-  if (stringr::str_detect(input_field, "\nZOOM")) {
-      df$Text_original_case <- get_filtered_sentences_from_py()
-      df$Text <- df$Text_original_case %>%
-        stringr::str_to_lower()
+cx_extra_tab_text <- function(df, min_rad, patterns) {
+  index <- df$ID[min_rad]
+  text <- ""
+  if (!identical(patterns, "")) {
+    for (pattern in patterns) {
+      cx_indices_one_doc(pattern, FALSE, index)
+    print(reticulate::py_eval("len(doc_indices[0][1])"))
+      text <-
+        paste0(
+          text,
+          "\n\n\n<b>",
+          pattern,
+          "</b>\n\n\n",
+          get_filtered_sentences_from_one_doc_py()
+        )
+      text <- stringr::str_trim(text)
+    }
   }
-  return(df)
+  return(text)
 }
 
 #' @export
@@ -144,5 +159,50 @@ cx_validate_input <- function(input_field) {
       FALSE
     }
   )
+
+}
+
+#' @export
+cx_shiny_validate <- function(extra_patterns) {
+    shiny::validate(shiny::need(
+
+    cx_validate_input(extra_patterns) |
+      identical(extra_patterns, "")
+    ,
+    paste("\nInvalid pattern in extra chart field.")
+))
+}
+
+#' @export
+cx_indices_one_doc <- function(input_field, case_sensitive, doc_index) {
+
+  index <- as.integer(doc_index - 1)
+
+  magic_input <- cx_collect_terms(input_field, case_sensitive)
+
+  if (length(magic_input) >= 2) {
+
+    main_filter_pattern <- magic_input[1]
+    w <- magic_input[2]
+
+    more_patterns <- magic_input[-(c(1,2))]
+
+    get_sentence_window_indices(
+      filter_pattern = main_filter_pattern,
+      window = w,
+      case_sensitive,
+      indices_included = index,
+      py_var_name = "doc_indices"
+    )
+
+    if (length(more_patterns) > 0) {
+        for (i in seq_along(more_patterns)) {
+            filter_sentence_window(more_patterns[i],
+                                   case_sensitive,
+                                   py_var_name = "doc_indices")
+        }
+    }
+
+  }
 
 }

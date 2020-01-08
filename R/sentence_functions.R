@@ -61,47 +61,54 @@ get_sentence_window_indices <-
   function(filter_pattern,
            window,
            case_sensitive = FALSE,
-           indices_included = NULL) {
+           indices_included = NULL,
+           py_var_name = "filtered_indices") {
     py$filter_pattern <- filter_pattern
     py$window <- as.integer(window)
     py$indices_included <- indices_included
 
     if (case_sensitive == FALSE) {
-      reticulate::py_run_string("
+      reticulate::py_run_string(sprintf("
 
-filtered_indices = sentence_windows_i_for_corpus(sentences_lower, filter_pattern, window, indices_included)
-filtered_indices = remove_docs_without_hits(filtered_indices)
+%s = sentence_windows_i_for_corpus(sentences_lower, filter_pattern, window, indices_included)
+%s = remove_docs_without_hits(%s)
 
-")
+",
+py_var_name, py_var_name, py_var_name))
+
     } else if (case_sensitive == TRUE) {
-      reticulate::py_run_string("
+      reticulate::py_run_string(sprintf("
 
-filtered_indices = sentence_windows_i_for_corpus(sentences, filter_pattern, window, indices_included)
-filtered_indices = remove_docs_without_hits(filtered_indices)
+%s = sentence_windows_i_for_corpus(sentences, filter_pattern, window, indices_included)
+%s = remove_docs_without_hits(%s)
 
-")
+",
+py_var_name, py_var_name, py_var_name))
     }
   }
 
 #' @export
-filter_sentence_window <- function(filter_pattern, case_sensitive = FALSE) {
+filter_sentence_window <- function(filter_pattern, case_sensitive = FALSE, py_var_name = "filtered_indices") {
   py$filter_pattern <- filter_pattern
 
   if (case_sensitive == FALSE) {
 
-  reticulate::py_run_string("
+  reticulate::py_run_string(sprintf("
 
-filtered_indices = filter_index_object(filtered_indices, sentences_lower, filter_pattern)
-filtered_indices = remove_docs_without_hits(filtered_indices)
+%s = filter_index_object(%s, sentences_lower, filter_pattern)
+%s = remove_docs_without_hits(%s)
 
-")
+",
+py_var_name, py_var_name, py_var_name, py_var_name))
+
   } else if (case_sensitive == TRUE) {
-  reticulate::py_run_string("
+  reticulate::py_run_string(sprintf("
 
-filtered_indices = filter_index_object(filtered_indices, sentences, filter_pattern)
-filtered_indices = remove_docs_without_hits(filtered_indices)
+%s = filter_index_object(%s, sentences, filter_pattern)
+%s = remove_docs_without_hits(%s)
 
-")
+",
+py_var_name, py_var_name, py_var_name, py_var_name))
   }
 }
 
@@ -122,7 +129,7 @@ get_filtered_doc_indices_from_py <- function(r_indexing = TRUE) {
 
 #' @export
 get_number_of_sentences_per_doc <- function(r_indexing = TRUE) {
-    py$chunks_per_doc <- reticulate::py_eval("number_of_extracted_sentences_per_doc(filtered_indices)")
+    py$chunks_per_doc <- reticulate::py_eval("number_of_extracted_sentences_per_doc(charting_indices)")
     docs <- reticulate::py_eval("get_indices(chunks_per_doc)")
     if (length(docs) > 0) {
         docs <- docs + r_indexing
@@ -137,9 +144,8 @@ get_number_of_sentences_per_doc <- function(r_indexing = TRUE) {
 #'
 #' @return
 #' @export
-get_filtered_sentences_from_one_doc_py <- function(doc_ID) {
-    py$index <- as.integer(doc_ID - 1)  # Python to R indexing
-    text <- reticulate::py_eval("retrieve_sentences_from_nested_indices_one_doc(filtered_indices, sentences, index)")
+get_filtered_sentences_from_one_doc_py <- function() {
+    text <- reticulate::py_eval("retrieve_sentences_from_nested_indices_one_doc(doc_indices, sentences)")
     text <- lapply(text, paste, collapse = " ") %>%
       unlist(use.names = FALSE) %>%
         paste(collapse = "\n\n")
@@ -184,9 +190,3 @@ explore_sentence_filtered_df <-
             search_terms = c(filter_pattern, search_pattern)
         )))
     }
-
-#' @export
-filter_sentence_object_by_doc_indices <- function(doc_indices) {
-  py$doc_indices <- doc_indices
-
-}
