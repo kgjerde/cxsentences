@@ -60,21 +60,23 @@ tokenize_sentences_en <- function(df, to_lower = TRUE) {
 get_sentence_window_indices <-
   function(filter_pattern,
            window,
-           case_sensitive = FALSE) {
+           case_sensitive = FALSE,
+           indices_included = NULL) {
     py$filter_pattern <- filter_pattern
     py$window <- as.integer(window)
+    py$indices_included <- indices_included
 
     if (case_sensitive == FALSE) {
       reticulate::py_run_string("
 
-filtered_indices = [(i, sentence_window_i(doc, filter_pattern, window)) for i, doc in enumerate(sentences_lower)]
+filtered_indices = sentence_windows_i_for_corpus(sentences_lower, filter_pattern, window, indices_included)
 filtered_indices = remove_docs_without_hits(filtered_indices)
 
 ")
     } else if (case_sensitive == TRUE) {
       reticulate::py_run_string("
 
-filtered_indices = [(i, sentence_window_i(doc, filter_pattern, window)) for i, doc in enumerate(sentences)]
+filtered_indices = sentence_windows_i_for_corpus(sentences, filter_pattern, window, indices_included)
 filtered_indices = remove_docs_without_hits(filtered_indices)
 
 ")
@@ -135,17 +137,6 @@ get_number_of_sentences_per_doc <- function(r_indexing = TRUE) {
 #'
 #' @return
 #' @export
-get_filtered_sentences_from_py <- function() {
-    texts <- reticulate::py_eval("retrieve_sentences_from_nested_indices(filtered_indices, sentences, join_string = ' ')")
-    texts <- lapply(texts, paste, collapse = "\n\n")
-    texts <- unlist(texts)
-}
-
-# TODO. Ser stygt ut i
-#' Title
-#'
-#' @return
-#' @export
 get_filtered_sentences_from_one_doc_py <- function(doc_ID) {
     py$index <- as.integer(doc_ID - 1)  # Python to R indexing
     text <- reticulate::py_eval("retrieve_sentences_from_nested_indices_one_doc(filtered_indices, sentences, index)")
@@ -193,3 +184,9 @@ explore_sentence_filtered_df <-
             search_terms = c(filter_pattern, search_pattern)
         )))
     }
+
+#' @export
+filter_sentence_object_by_doc_indices <- function(doc_indices) {
+  py$doc_indices <- doc_indices
+
+}
