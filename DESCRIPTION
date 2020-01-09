@@ -7,7 +7,8 @@ Maintainer: The package maintainer <yourself@somewhere.net>
 Description: Python environment and R wrappers for corpus filtering
     by sentence proximity.
 License: GPL-3
-Depends: corporaexplorer, reticulate
+Depends: reticulate
+Imports: corporaexplorer, stringr
 SystemRequirements: Python (>= 3.6.0) with shared library;
     rusenttokenize;
     tqdm

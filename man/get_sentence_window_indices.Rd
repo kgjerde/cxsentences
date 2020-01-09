@@ -4,7 +4,13 @@
 \alias{get_sentence_window_indices}
 \title{Wrapper for convenient argument passing}
 \usage{
-get_sentence_window_indices(filter_pattern, window)
+get_sentence_window_indices(
+  filter_pattern,
+  window,
+  case_sensitive = FALSE,
+  indices_included = NULL,
+  py_var_name = "filtered_indices"
+)
 }
 \arguments{
 \item{filter_pattern}{Chr. around which pattern extract sentences?}
