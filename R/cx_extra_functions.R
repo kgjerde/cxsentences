@@ -206,3 +206,30 @@ cx_indices_one_doc <- function(input_field, case_sensitive, doc_index) {
   }
 
 }
+
+#' @export
+cx_extra_create_df_for_info <- function(df, terms, case_sensitive) {
+  linjer <- length(terms)
+  count_overview <- data.frame(dummy = seq_len(nrow(df)))
+
+  for (i in seq_len(linjer)) {
+    count_overview[i] <- cx_extra_chart(terms[i],
+      df,
+      df,
+      case_sensitive,
+      "data_dok",
+      indices_included = df$ID - 1
+    )
+  }
+
+  colnames(count_overview) <- terms
+
+  return(list(
+    start_df = count_overview,
+    full_terms = terms,
+    tresh = rep(NA, length(terms)),
+    cust_col = rep(NA, length(terms)),
+    terms = terms,
+    years = df$Year
+  ))
+}

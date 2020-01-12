@@ -2,6 +2,7 @@
 
 export(create_sentence_filtered_df)
 export(cx_extra_chart)
+export(cx_extra_create_df_for_info)
 export(cx_extra_reset_data)
 export(cx_extra_subset)
 export(cx_extra_tab_text)
