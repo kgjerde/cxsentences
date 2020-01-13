@@ -1,3 +1,5 @@
+#' Actions to be carried out when search button is clicked
+#'
 #' @export
 cx_extra_reset_data <- function() {
   reticulate::py_run_string("filtered_indices = []")
@@ -5,8 +7,16 @@ cx_extra_reset_data <- function() {
   reticulate::py_run_string("doc_indices = []")
 }
 
-cx_collect_terms <- function(input_field, case_sensitive) {
-  magic_input <- stringr::str_remove_all(input_field, "\n.*")
+#' Parse one input phrase into something useful for further processing
+#'
+#' @param input_field One pattern collected from input field
+#' @param case_sensitive search_arguments$case_sensitive
+#'
+#' @return Something useful, e.g. parsed phrase
+#'   "ost--0" to c("ost", "0")
+#' @export
+cx_parse_terms <- function(extra_input_phrase, case_sensitive) {
+  magic_input <- stringr::str_remove_all(extra_input_phrase, "\n.*")
   magic_input <- stringr::str_split(magic_input, "--")
   magic_input <- unlist(magic_input)
 
@@ -27,10 +37,22 @@ cx_collect_terms <- function(input_field, case_sensitive) {
   return(magic_input)
 }
 
-#' @export
-cx_extra_subset <- function(input_field, df, case_sensitive, indices_included = NULL) {
 
-  magic_input <- cx_collect_terms(input_field, case_sensitive)
+#' Subset corpus
+#'
+#' Filter corpus based on one "extra subset field" phrase
+#'
+#' @param extra_input_phrase phrase from extra subset field
+#' @param df data_dok corporaexplorer data frame
+#' @param case_sensitive search_arguments$case_sensitive
+#' @param indices_included R data_dok IDs included from potential filtering before this function
+#'   is called
+#'
+#' @return filtered data_dok corporaexplorer data frame
+#' @export
+cx_extra_subset <- function(extra_input_phrase, df, case_sensitive, indices_included = NULL) {
+
+  magic_input <- cx_parse_terms(extra_input_phrase, case_sensitive)
 
   if (length(magic_input) >= 2) {
 
@@ -43,7 +65,7 @@ cx_extra_subset <- function(input_field, df, case_sensitive, indices_included = 
       filter_pattern = main_filter_pattern,
       window = w,
       case_sensitive,
-      indices_included
+      indices_included - 1  # translation from R to Python indexing
     )
 
     if (length(more_patterns) > 0) {
@@ -63,10 +85,24 @@ cx_extra_subset <- function(input_field, df, case_sensitive, indices_included = 
   return(df)
 }
 
-#' @export
-cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus, indices_included = NULL) {
 
-  magic_input <- cx_collect_terms(input_field, case_sensitive)
+#' Count hits/chart
+#'
+#' Chart hits on corpus based on one "extra chart field" phrase
+#'
+#' @param extra_input_phrase phrase from extra chart field
+#' @param df_dok data_dok df
+#' @param df_modus data_dok or data_365 df
+#' @param case_sensitive search_arguments$case_sensitive
+#' @param modus plot_mode
+#' @param indices_included R data_dok IDs included from potential filtering before this function
+#'   is called
+#'
+#' @return base R data frame with nrow() == nrow(df_modus) and 1 column with hits per row
+#' @export
+cx_extra_chart <- function(extra_input_phrase, df_dok, df_modus, case_sensitive, modus, indices_included = NULL) {
+
+  magic_input <- cx_parse_terms(extra_input_phrase, case_sensitive)
 
   if (length(magic_input) >= 2) {
 
@@ -79,7 +115,7 @@ cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus,
       filter_pattern = main_filter_pattern,
       window = w,
       case_sensitive,
-      indices_included,
+      indices_included - 1,  # translation from R to Python indexing
       py_var_name = "charting_indices"
     )
 
@@ -128,6 +164,14 @@ cx_extra_chart <- function(input_field, df_dok, df_modus, case_sensitive, modus,
 
 }
 
+
+#' Text to be displayed in "extra tab" in document box
+#'
+#' @param df corporaexplorer df (data_dok or data_365)
+#' @param min_rad row in df
+#' @param patterns patternS from extra chart input field
+#'
+#' @return Text to be displayed
 #' @export
 cx_extra_tab_text <- function(df, min_rad, patterns) {
   index <- df$ID[min_rad]
@@ -149,6 +193,12 @@ cx_extra_tab_text <- function(df, min_rad, patterns) {
   return(text)
 }
 
+
+#' Validate input phrases
+#'
+#' @param input_field character vector of "extra input phrases"
+#'
+#' @return Boolean. TRUE if all phrases are OK.
 #' @export
 cx_validate_input <- function(input_field) {
 
@@ -171,7 +221,10 @@ cx_validate_input <- function(input_field) {
   )
 
 }
-
+#' "shiny::validate(shiny::need(" wrapper for cx_validate_input()
+#'
+#' @param extra_patterns character vector of "extra input phrases"
+#'
 #' @export
 cx_shiny_validate <- function(extra_patterns) {
     shiny::validate(shiny::need(
@@ -183,12 +236,15 @@ cx_shiny_validate <- function(extra_patterns) {
 ))
 }
 
-#' @export
+
+#' Generate identified chunk indices for one doc, one phrase
+#'
+#' Internal. And works in the Python process
 cx_indices_one_doc <- function(input_field, case_sensitive, doc_index) {
 
   index <- as.integer(doc_index - 1)
 
-  magic_input <- cx_collect_terms(input_field, case_sensitive)
+  magic_input <- cx_parse_terms(input_field, case_sensitive)
 
   if (length(magic_input) >= 2) {
 
@@ -217,6 +273,15 @@ cx_indices_one_doc <- function(input_field, case_sensitive, doc_index) {
 
 }
 
+
+#' "Extra" equivalent to create_df_for_info() in corporaexplorer
+#'
+#' @param df session_variables$data_dok,
+#' @param terms search_arguments$extra_chart_terms
+#' @param case_sensitive search_arguments$case_sensitive
+#'
+#' @return A peculiar list to be used to create table and
+#'   plot in corpus info tab
 #' @export
 cx_extra_create_df_for_info <- function(df, terms, case_sensitive) {
   linjer <- length(terms)
@@ -228,7 +293,7 @@ cx_extra_create_df_for_info <- function(df, terms, case_sensitive) {
       df,
       case_sensitive,
       "data_dok",
-      indices_included = df$ID - 1
+      indices_included = df$ID
     )
   }
 

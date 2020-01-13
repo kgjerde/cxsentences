@@ -1,8 +1,6 @@
 #' Initiate Python environment
 #'
 #' @param virtenv Path to virtenv with required modules
-#'
-#' @return
 #' @export
 cx_setup <-
   function(virtenv = "/Users/Kristian/.local/share/virtualenvs/apekatt-mr9vg8U1/") {

@@ -11,9 +11,6 @@ cx_setup(
 \arguments{
 \item{virtenv}{Path to virtenv with required modules}
 }
-\value{
-
-}
 \description{
 Initiate Python environment
 }

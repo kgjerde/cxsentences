@@ -7,10 +7,7 @@
 get_filtered_doc_indices_from_py(r_indexing = TRUE)
 }
 \arguments{
-\item{r_indexing}{}
-}
-\value{
-
+\item{r_indexing}{Whether the input is from R index (starting on 1)}
 }
 \description{
 Title

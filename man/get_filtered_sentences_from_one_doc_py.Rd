@@ -6,9 +6,6 @@
 \usage{
 get_filtered_sentences_from_one_doc_py()
 }
-\value{
-
-}
 \description{
 Title
 }

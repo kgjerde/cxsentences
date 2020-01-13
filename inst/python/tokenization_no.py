@@ -97,4 +97,5 @@ def sent_patch(sentences):
 def tokenize_sentences_no(list_of_strings):
     setninger = [sent_tokenize(text, language = "norwegian") for text in tqdm(list_of_strings)]
     setninger = [sent_patch(text) for text in tqdm(setninger)]
+    setninger = [(i, doc) for i,doc in enumerate(setninger)]
     return setninger

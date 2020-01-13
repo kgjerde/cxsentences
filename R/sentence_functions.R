@@ -114,10 +114,7 @@ py_var_name, py_var_name, py_var_name, py_var_name))
 
 #' Title
 #'
-#' @param r_indexing
-#'
-#' @return
-#' @export
+#' @param r_indexing Whether the input is from R index (starting on 1)
 get_filtered_doc_indices_from_py <- function(r_indexing = TRUE) {
     indices <- reticulate::py_eval("get_indices(filtered_indices)")
 
@@ -127,7 +124,6 @@ get_filtered_doc_indices_from_py <- function(r_indexing = TRUE) {
     return(indices)
 }
 
-#' @export
 get_number_of_sentences_per_doc <- function(r_indexing = TRUE) {
     py$chunks_per_doc <- reticulate::py_eval("number_of_extracted_sentences_per_doc(charting_indices)")
     docs <- reticulate::py_eval("get_indices(chunks_per_doc)")
@@ -141,9 +137,6 @@ get_number_of_sentences_per_doc <- function(r_indexing = TRUE) {
 
 # TODO. Ser stygt ut i
 #' Title
-#'
-#' @return
-#' @export
 get_filtered_sentences_from_one_doc_py <- function() {
     text <- reticulate::py_eval("retrieve_sentences_from_nested_indices_one_doc(doc_indices, sentences)")
     text <- lapply(text, paste, collapse = " ") %>%
@@ -153,7 +146,6 @@ get_filtered_sentences_from_one_doc_py <- function() {
 
 #' Returns a filtered
 #'   (full text) df based on the returned indices
-#' @export
 create_sentence_filtered_df <-
     function(df,
              filter_pattern,
@@ -174,7 +166,6 @@ create_sentence_filtered_df <-
 #' runs corporaexplorer `explore0()` on the df returned by
 #'   `create_sentence_filtered_df()`, with two search fields
 #'   pre-populated
-#' @export
 explore_sentence_filtered_df <-
     function(df,
              filter_pattern,
