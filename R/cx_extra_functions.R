@@ -13,6 +13,17 @@ cx_collect_terms <- function(input_field, case_sensitive) {
   if (case_sensitive == FALSE) {
     magic_input <- stringr::str_to_lower(magic_input)
   }
+
+  ## "!" first in pattern converts pattern to match
+  # sentences that do _not_ match pattern:
+  # https://stackoverflow.com/questions/1240275/how-to-negate-specific-word-in-regex
+  # Also: "." match also newlines: item "(?aiLmsux)" at
+  # https://docs.python.org/3/library/re.html
+
+  magic_input <- stringr::str_replace(magic_input,
+                                      "^!(.*)$",
+                                      "(?s)^(?!.*\\1).*$")
+
   return(magic_input)
 }
 
@@ -124,7 +135,6 @@ cx_extra_tab_text <- function(df, min_rad, patterns) {
   if (!identical(patterns, "")) {
     for (pattern in patterns) {
       cx_indices_one_doc(pattern, FALSE, index)
-    print(reticulate::py_eval("len(doc_indices[0][1])"))
       text <-
         paste0(
           text,
