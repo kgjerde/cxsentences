@@ -9,3 +9,7 @@ utils::globalVariables(
       "get_nested_indices"
   )
 )
+
+.onLoad <- function(libname, pkgname) {
+    cx_setup()
+}
