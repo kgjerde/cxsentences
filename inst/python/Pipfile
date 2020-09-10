@@ -9,6 +9,10 @@ verify_ssl = true
 rusenttokenize = "*"
 tqdm = "*"
 black = "*"
+nltk = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.8.5"
+
+[pipenv]
+allow_prereleases = true
