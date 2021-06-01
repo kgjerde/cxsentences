@@ -7,13 +7,16 @@
 #'   (and thereby also by `create_sentence_filtered_df()`
 #'   and `explore_sentence_filtered_df()`).
 #'
-#' @param df R data frame
+#' @param df R data frame or corporaexplorerobject
 #' @param to_lower convert the final list of lists to lower case?
 #'
 #' @return internal Python object `sentences`
 #'   and `sentences_lower`.
 #' @export
 tokenize_sentences_ru <- function(df, to_lower = TRUE) {
+    if (identical(class(df), "corporaexplorerobject")) {
+      df <- corporaexplorer:::get_df(df)
+    }
     py$Text <- df$Text
     reticulate::py_run_string("sentences = tokenize_sentences_ru(Text)")
 
@@ -24,6 +27,9 @@ tokenize_sentences_ru <- function(df, to_lower = TRUE) {
 
 #' @export
 tokenize_sentences_no <- function(df, to_lower = TRUE) {
+    if (identical(class(df), "corporaexplorerobject")) {
+      df <- corporaexplorer:::get_df(df)
+    }
     py$Text <- df$Text
     reticulate::py_run_string("sentences = tokenize_sentences_no(Text)")
 
@@ -34,6 +40,9 @@ tokenize_sentences_no <- function(df, to_lower = TRUE) {
 
 #' @export
 tokenize_sentences_en <- function(df, to_lower = TRUE) {
+    if (identical(class(df), "corporaexplorerobject")) {
+      df <- corporaexplorer:::get_df(df)
+    }
     py$Text <- df$Text
     reticulate::py_run_string("sentences = tokenize_sentences_en(Text)")
 
