@@ -4,7 +4,7 @@
 #' @export
 cx_setup <-
   function(virtenv = "/Users/Kristian/.local/share/virtualenvs/python-dpTsFlai/") {
-    reticulate::use_virtualenv(virtenv, required = TRUE)
+    # reticulate::use_virtualenv(virtenv, required = TRUE)
 
     path_to_py_functions <- system.file("python", package = "cxsentences")
 
