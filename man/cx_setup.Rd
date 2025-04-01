@@ -5,7 +5,8 @@
 \title{Initiate Python environment}
 \usage{
 cx_setup(
-  virtenv = "/Users/Kristian/.local/share/virtualenvs/apekatt-mr9vg8U1/"
+  virtenv =
+    "/Users/kristianlg/Library/CloudStorage/Dropbox/Projects/corporaexplorer_development/cxsentences/inst/python/.venv/"
 )
 }
 \arguments{

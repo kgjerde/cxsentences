@@ -1,0 +1,29 @@
+
+[project]
+name = ""
+version = ""
+description = ""
+authors = [
+    {name = "kgjerde", email = "kristian.gjerde@gmail.com"},
+]
+dependencies = [
+    "rusenttokenize",
+    "tqdm",
+    "black",
+    "nltk",
+]
+requires-python = ">=3.8"
+license = {text = "MIT"}
+readme = "README.md"
+
+[tool.pdm]
+allow_prereleases = true
+
+[[tool.pdm.source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[tool.pdm.dev-dependencies]
+dev = []
+

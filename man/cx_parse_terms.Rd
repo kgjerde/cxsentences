@@ -7,7 +7,7 @@
 cx_parse_terms(extra_input_phrase, case_sensitive)
 }
 \arguments{
-\item{case_sensitive}{}
+\item{case_sensitive}{search_arguments$case_sensitive}
 
 \item{input_field}{One pattern collected from input field}
 }

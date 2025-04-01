@@ -3,7 +3,7 @@
 #' @param virtenv Path to virtenv with required modules
 #' @export
 cx_setup <-
-  function(virtenv = "/Users/Kristian/.local/share/virtualenvs/python-dpTsFlai/") {
+  function(virtenv = "/Users/kristianlg/Library/CloudStorage/Dropbox/Projects/corporaexplorer_development/cxsentences/inst/python/.venv/") {
     reticulate::use_virtualenv(virtenv, required = TRUE)
 
     path_to_py_functions <- system.file("python", package = "cxsentences")

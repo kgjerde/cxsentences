@@ -7,7 +7,7 @@
 tokenize_sentences_ru(df, to_lower = TRUE)
 }
 \arguments{
-\item{df}{R data frame}
+\item{df}{R data frame or corporaexplorerobject}
 
 \item{to_lower}{convert the final list of lists to lower case?}
 }
