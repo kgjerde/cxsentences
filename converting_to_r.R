@@ -430,11 +430,11 @@ library(dplyr)
 sentr <- py$sentences_lower
 
 sdf <- tibble::tibble(Text = sentr) %>%
-    dplyr::mutate(ID = seq_along(sentr)) %>%
+    dplyr::mutate(cx_ID = seq_along(sentr)) %>%
     tidyr::unnest(Text)
 
 sdf <- sdf %>%
-    dplyr::group_by(ID) %>%
+    dplyr::group_by(cx_ID) %>%
     dplyr::mutate(Sent_ID = seq_len(dplyr::n())) %>%
     dplyr::mutate(Last_in_doc = dplyr::row_number() == dplyr::n())
 

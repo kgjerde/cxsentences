@@ -139,7 +139,7 @@ get_number_of_sentences_per_doc <- function(r_indexing = TRUE) {
     if (length(docs) > 0) {
         docs <- docs + r_indexing
         n <- reticulate::py_eval("[x[1] for x in chunks_per_doc]")
-        df <- data.frame(Term_1 = n, ID = docs)
+        df <- data.frame(Term_1 = n, cx_ID = docs)
         return(df)
     }
 }

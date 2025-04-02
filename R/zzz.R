@@ -4,7 +4,7 @@ utils::globalVariables(
   c(
       "Date",
       "Term_1",
-      "ID",
+      "cx_ID",
       "explore0",
       "get_nested_indices"
   )

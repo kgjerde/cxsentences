@@ -78,7 +78,7 @@ cx_extra_subset <- function(extra_input_phrase, df, case_sensitive, indices_incl
     filtering_indices <- get_filtered_doc_indices_from_py()
 
     df <-
-      df[df$ID %in%
+      df[df$cx_ID %in%
         filtering_indices, ]
   }
 
@@ -138,7 +138,7 @@ cx_extra_chart <- function(extra_input_phrase, df_dok, df_modus, case_sensitive,
 
   if (modus == "data_365") {
 
-    count_overview$Date <- plyr::mapvalues(count_overview$ID, df_dok$ID, as.character(df_dok$Date), warn_missing = FALSE) %>%
+    count_overview$Date <- plyr::mapvalues(count_overview$cx_ID, df_dok$cx_ID, as.character(df_dok$Date), warn_missing = FALSE) %>%
       as.Date()
     count_overview <- count_overview %>%
       dplyr::group_by(Date) %>%
@@ -149,12 +149,12 @@ cx_extra_chart <- function(extra_input_phrase, df_dok, df_modus, case_sensitive,
     count_overview <- as.data.frame(count_overview)
 
   } else {
-      count_overview <- dplyr::filter(count_overview, ID %in% df_modus$ID)
+      count_overview <- dplyr::filter(count_overview, cx_ID %in% df_modus$cx_ID)
       if (nrow(count_overview) != nrow(df_modus)) {
-        day_doc_without_hits <- df_modus$ID[!(df_modus$ID %in% count_overview$ID)]
-        day_doc_without_hits <- data.frame(ID = day_doc_without_hits, Term_1 = 0)
+        day_doc_without_hits <- df_modus$cx_ID[!(df_modus$cx_ID %in% count_overview$cx_ID)]
+        day_doc_without_hits <- data.frame(cx_ID = day_doc_without_hits, Term_1 = 0)
         count_overview <- rbind(count_overview, day_doc_without_hits) %>%
-          dplyr::arrange(ID)
+          dplyr::arrange(cx_ID)
       }
       count_overview <- dplyr::select(count_overview, Term_1)
       count_overview <- as.data.frame(count_overview)
@@ -174,7 +174,7 @@ cx_extra_chart <- function(extra_input_phrase, df_dok, df_modus, case_sensitive,
 #' @return Text to be displayed
 #' @export
 cx_extra_tab_text <- function(df, min_rad, patterns) {
-  index <- df$ID[min_rad]
+  index <- df$cx_ID[min_rad]
   text <- ""
   if (!identical(patterns, "")) {
     for (pattern in patterns) {
@@ -293,7 +293,7 @@ cx_extra_create_df_for_info <- function(df, terms, case_sensitive) {
       df,
       case_sensitive,
       "data_dok",
-      indices_included = df$ID
+      indices_included = df$cx_ID
     )
   }
 
